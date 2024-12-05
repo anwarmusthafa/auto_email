@@ -1,0 +1,53 @@
+# Byte-compiled / optimized / DLL files
+*.pyc
+*.pyo
+__pycache__/
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.manifest
+*.spec
+
+# Virtual environment
+venv/
+.env/
+.env.* 
+
+.env
+
+
+
+# Local SQLite database
+db.sqlite3
+
+# Django migrations
+**/migrations/*.py
+!**/migrations/__init__.py
+
+# Media uploads (if stored locally)
+media/
+
+
+# Celery Beat schedule file
+celerybeat-schedule
+celerybeat.pid
+
+
+# Static files (collected via `collectstatic`)
+staticfiles/
+static/
+
+
+# Cache files
+.cache/
+
+
+# Secret key and settings
+*.env
+.env.*
+secrets.json
+
+# Avoid exposing sensitive settings
+settings_local.py
