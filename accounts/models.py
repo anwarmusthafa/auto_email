@@ -2,6 +2,7 @@ import re
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
 from django.core.exceptions import ValidationError
+import uuid 
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, name, password=None, **extra_fields):
@@ -42,9 +43,12 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     """
     Custom user model that uses email as the username.
     """
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     name = models.CharField(max_length=50)
     email = models.EmailField(max_length=254, unique=True)
     otp = models.CharField(max_length=6, blank=True, null=True)
+    is_staff = models.BooleanField(default=False)
+    is_superuser = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     objects = CustomUserManager()
