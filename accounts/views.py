@@ -6,30 +6,40 @@ from rest_framework.response import Response
 from rest_framework import status
 from .tasks import send_otp_to_email
 from django.contrib.auth.hashers import check_password
-# Create your views here.
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth import authenticate
+import re
 
 @api_view(['POST'])
 def register_user(request):
     password = request.data.get('password')
     confirm_password = request.data.get('confirm-password')
+    email = request.data.get('email')
+    name = request.data.get('name')
     if password != confirm_password:
-        return Response({"error": "Passwords do not match"}, status=status.HTTP_400_BAD_REQUEST)
-    serializer = UserSerializer(data=request.data) 
+        return Response({"error": "Passwords do not match."}, status=status.HTTP_400_BAD_REQUEST)
+    if CustomUser.objects.filter(email=email).exists():
+        return Response({"error": "User with this email already exists."}, status=status.HTTP_400_BAD_REQUEST)
+    reg_name = r'^[a-zA-Z]+(?: [a-zA-Z]+)*$'
+    if not name or len(name) < 3 or not re.match(reg_name, name):
+        return Response({"error": "Name must be at least 3 characters long and contain only letters."}, status=status.HTTP_400_BAD_REQUEST)
+
+    serializer = UserSerializer(data=request.data)
     try:
-        if serializer.is_valid():
+        if serializer.is_valid(raise_exception=True):
             user = serializer.save()
             # Send the OTP to the user's email using Celery
             send_otp_to_email.delay(user.name, user.email, user.plain_otp)
-
-            # Include user ID in the response
-            return Response({
-                "message": "User registered successfully. An OTP has been sent to your email.",
-                "user_id": user.uuid  # Send user ID to the frontend
-            }, status=status.HTTP_201_CREATED)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {
+                    "message": "User registered successfully. An OTP has been sent to your email.",
+                    "user_id": user.uuid
+                },
+                status=status.HTTP_201_CREATED
+            )
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 @api_view(['POST'])
 def verify_otp(request):
@@ -43,12 +53,39 @@ def verify_otp(request):
         if check_password(otp, user.otp):
             user.is_verified = True
             user.save()
-            return Response({"message": "OTP verified successfully"}, status=status.HTTP_200_OK)
+            return Response({"message": "OTP verified successfully."}, status=status.HTTP_200_OK)
         else:
-            return Response({"error": "Invalid OTP"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Invalid OTP."}, status=status.HTTP_400_BAD_REQUEST)
     except CustomUser.DoesNotExist:
-        return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
     except ValueError:
         return Response({"error": "Invalid input provided."}, status=status.HTTP_400_BAD_REQUEST)
     except Exception:
         return Response({"error": "An unexpected error occurred. Please try again later."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+def login_user(request):
+    try:
+        email = request.data.get('email')
+        password = request.data.get('password')
+        if not email or not password:
+            return Response({"error": "Both email and password are required."}, status=status.HTTP_400_BAD_REQUEST)
+        user = authenticate(email=email, password=password)
+        if not user:
+            return Response({"error": "Invalid email or password."}, status=status.HTTP_400_BAD_REQUEST)
+        if not user.is_verified:
+            return Response({"error": "User OTP is not verified."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Generate tokens
+        tokens = RefreshToken.for_user(user)
+        return Response(
+            {
+                "message": "Login successful.",
+                "access": str(tokens.access_token),
+                "refresh": str(tokens)
+            },
+            status=status.HTTP_200_OK
+        )
+    except Exception as e:
+        return Response({"error": "An unexpected error occurred. Please try again."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
