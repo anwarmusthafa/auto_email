@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from .models import CustomUser
 from .serializers import UserSerializer
 from .tasks import send_otp_to_email
