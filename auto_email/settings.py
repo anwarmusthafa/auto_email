@@ -188,7 +188,7 @@ LOGGING = {
             'handlers': ['console'],
             'level': 'INFO',
         },
-        'auto_email': {  # Replace with your project name
+        'auto_email': {
             'handlers': ['console'],
             'level': 'INFO',
         },
