@@ -5,7 +5,7 @@ class Emails(models.Model):
     SENT = 1
     STATUS_CHOICES = (
         (PENDING, 'Pending'),
-        (SENT, 'Sent'),
+        (SENT, 'Sent')
     )
     sender = models.ForeignKey(CustomUser,on_delete=models.DO_NOTHING)
     reciever_email = models.EmailField()

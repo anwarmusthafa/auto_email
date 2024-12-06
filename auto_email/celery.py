@@ -15,6 +15,15 @@ app.config_from_object('django.conf:settings', namespace='CELERY')
 # Discover tasks in installed apps automatically.
 app.autodiscover_tasks()
 
+app.conf.beat_schedule = {
+    # Task to run at every minute:
+    'cheack emails to sent every minute ': {
+        'task': 'scheduler.tasks.trigger_scheduled_emails',
+        'schedule': crontab(),
+    },
+}
+
+
 @app.task(bind=True)
 def debug_task(self):
     print(f"Request: {self.request!r}")
