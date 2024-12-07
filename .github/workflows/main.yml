@@ -53,13 +53,9 @@ jobs:
           python manage.py collectstatic --noinput
           python manage.py makemigrations
           python manage.py migrate
-          sudo supervisorctl stop gunicorn
-          sudo supervisorctl stop celery
-          sudo supervisorctl stop celery-beat
-
-          sudo supervisorctl start gunicorn
-          sudo supervisorctl start celery
-          sudo supervisorctl start celery-beat
+          sudo supervisorctl restart gunicorn
+          sudo supervisorctl restart celery
+          sudo supervisorctl restart celerybeat
 
           sudo systemctl restart nginx
         EOF
