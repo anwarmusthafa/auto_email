@@ -21,6 +21,10 @@ app.conf.beat_schedule = {
         'task': 'scheduler.tasks.trigger_scheduled_emails',
         'schedule': crontab(),
     },
+    'remove_unverified_users': {
+        'task': 'accounts.tasks.remove_unverified_users',
+        'schedule': crontab(hour=0, minute=0),
+    },
 }
 
 

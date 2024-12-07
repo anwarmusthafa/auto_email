@@ -1,23 +1,19 @@
-from django.contrib.auth.models import User
 from celery import shared_task
 from django.core.mail import EmailMultiAlternatives
 from django.utils.html import strip_tags
 from auto_email import settings
-
+from datetime import timedelta
+from django.utils.timezone import now
 import logging
+from .models import CustomUser
 
 logger = logging.getLogger(__name__)
 
 @shared_task(bind=True)
 def send_otp_to_email(self, name, to_email, otp):
-    print(f"Sending OTP to {to_email}")
-    print(f"OTP: {otp}")
-    print(f"Request: {self.request!r}")
-    mail_subject = "Your OTP Code"
+    
+    mail_subject = "OTP Code from Auto Email"
 
-    logger.info(f"Sending OTP to {to_email}")
-    logger.info(f"OTP: {otp}")
-    logger.info(f"Request: {self.request!r}")
     
     # HTML content for the email
     html_content = f"""
@@ -75,7 +71,7 @@ def send_otp_to_email(self, name, to_email, otp):
             <div class="otp">{otp}</div>
             <p>This code is valid for a limited time. Please do not share it with anyone.</p>
             <div class="footer">
-                &copy; Echobyte. All rights reserved.
+                &copy; Auto Email. All rights reserved.
             </div>
         </div>
     </body>
@@ -91,3 +87,20 @@ def send_otp_to_email(self, name, to_email, otp):
 
     email.send(fail_silently=False)
     return "Done"
+
+@shared_task(bind=True)
+def remove_unverified_users(self):
+    current_time = now()
+    
+    # Filter unverified users who joined more than 7 days ago
+    unverified_users = CustomUser.objects.filter(
+        is_verified=False, 
+        created_at__lte=current_time - timedelta(days=7)
+    )
+    
+    try:
+        # Perform a bulk delete for efficiency
+        count, _ = unverified_users.delete()
+        return f"Successfully deleted {count} unverified users."
+    except Exception as e:
+        return f"Failed to delete unverified users: {e}"

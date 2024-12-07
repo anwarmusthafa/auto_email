@@ -34,7 +34,7 @@ def schedule_email(request):
                         status=status.HTTP_400_BAD_REQUEST)
     
     # Ensure the scheduled time is not in the past
-    if combined_datetime < now():  # Use 'now()' to get the current time as aware
+    if combined_datetime < now():
         return Response({"error": "Scheduled time cannot be in the past."}, status=status.HTTP_400_BAD_REQUEST)
 
     try:

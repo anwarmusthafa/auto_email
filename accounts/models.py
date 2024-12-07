@@ -30,6 +30,7 @@ class CustomUserManager(BaseUserManager):
 
         return self.create_user(email, name, password, **extra_fields)
 
+
     @staticmethod
     def is_valid_email(email):
         """
@@ -67,3 +68,8 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     @staticmethod
     def is_valid_otp(otp):
         return otp.isdigit() and len(otp) == 6
+    
+    class Meta:
+        indexes = [
+            models.Index(fields=['is_verified', 'created_at']),
+        ]
