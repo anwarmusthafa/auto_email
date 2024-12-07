@@ -1,0 +1,64 @@
+name: CD/CI Auto Email Demo
+
+on:
+  push:
+    branches:
+      - main  # Trigger only on pushes to the main branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Checkout the repository
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # Set up Python environment
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'  # Use your desired Python version
+
+    # Install dependencies
+    - name: Install dependencies
+      run: |
+        python -m venv venv
+        source venv/bin/activate
+        pip install --upgrade pip
+        pip install -r requirements.txt
+
+    # Deploy to the server
+    - name: Deploy to Server
+      env:
+        HOST: ${{ secrets.HOST }}
+        USERNAME: ${{ secrets.USERNAME }}
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        SECRET_KEY: ${{ secrets.SECRET_KEY }}  # Ensure your SECRET_KEY is set
+      run: |
+        echo "$SSH_PRIVATE_KEY" > private_key.pem
+        chmod 600 private_key.pem
+        ssh -i private_key.pem -o StrictHostKeyChecking=no $USERNAME@$HOST << 'EOF'
+          cd /home/ubuntu/project/auto_email  # Change this to point to the correct project directory
+          # Ensure the working directory is clean, stashing any local changes
+          if ! git diff-index --quiet HEAD --; then
+              echo "Stashing local changes..."
+              git stash
+          fi
+          # Pull the latest changes from the main branch
+          git pull origin main
+          source /home/ubuntu/project/auto_email/venv/bin/activate  # Activate the virtual environment
+          export SECRET_KEY=${SECRET_KEY}  # Set the SECRET_KEY
+          pip install --upgrade -r requirements.txt
+          python manage.py collectstatic --noinput
+          python manage.py makemigrations
+          python manage.py migrate
+          sudo supervisorctl restart gunicorn
+          sudo supervisorctl restart celery
+          sudo supervisorctl restart celery-beat
+
+          sudo systemctl restart nginx
+        EOF
+        rm private_key.pem
+
+# End
