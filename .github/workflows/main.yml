@@ -34,7 +34,7 @@ jobs:
         HOST: ${{ secrets.HOST }}
         USERNAME: ${{ secrets.USERNAME }}
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        SECRET_KEY: ${{ secrets.SECRET_KEY }}  # Ensure your SECRET_KEY is set
+        SECRET_KEY: ${{ secrets.SECRET_KEY }}
       run: |
         echo "$SSH_PRIVATE_KEY" > private_key.pem
         chmod 600 private_key.pem
@@ -53,9 +53,13 @@ jobs:
           python manage.py collectstatic --noinput
           python manage.py makemigrations
           python manage.py migrate
-          sudo supervisorctl restart gunicorn
-          sudo supervisorctl restart celery
-          sudo supervisorctl restart celery-beat
+          sudo supervisorctl stop gunicorn
+          sudo supervisorctl stop celery
+          sudo supervisorctl stop celery-beat
+
+          sudo supervisorctl start gunicorn
+          sudo supervisorctl start celery
+          sudo supervisorctl start celery-beat
 
           sudo systemctl restart nginx
         EOF
