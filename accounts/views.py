@@ -10,11 +10,15 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
 import re
+from django_ratelimit.decorators import ratelimit
+from django_ratelimit.core import is_ratelimited
+
 
 
 @api_view(['POST'])
 def register_user(request):
     """Register a new user."""
+    print(request.data)
     password = request.data.get('password')
     confirm_password = request.data.get('confirm-password')
     email = request.data.get('email')
@@ -34,6 +38,7 @@ def register_user(request):
     try:
         if serializer.is_valid(raise_exception=True):
             user = serializer.save()
+            print("user",user)
             # Send the OTP to the user's email using Celery
             send_otp_to_email.delay(user.name, user.email, user.plain_otp)
             return Response(
@@ -74,8 +79,8 @@ def verify_otp(request):
 
 
 @api_view(['POST'])
+@ratelimit(key='ip', rate='5/m', block=True)
 def login_user(request):
-    """Authenticate and login the user."""
     email = request.data.get('email')
     password = request.data.get('password')
 
