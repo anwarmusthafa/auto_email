@@ -28,7 +28,7 @@ def register_user(request):
         return Response({"error": "Passwords do not match."}, status=status.HTTP_400_BAD_REQUEST)
     
     if CustomUser.objects.filter(email=email).exists():
-        return Response({"error": "User with this email already exists."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": "User with this email already exists , Please User another email."}, status=status.HTTP_400_BAD_REQUEST)
     
     reg_name = r'^[a-zA-Z]+(?: [a-zA-Z]+)*$'
     if not name or len(name) < 3 or not re.match(reg_name, name):
