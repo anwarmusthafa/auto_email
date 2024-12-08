@@ -83,3 +83,8 @@ python manage.py migrate
 - Ensure Celery Worker and Celery Beat are running.
 - Test all endpoints using tools like Postman or cURL.
 - Use the access token received from login for all protected API requests in the Authorization header.
+
+
+
+## Documentation
+https://documenter.getpostman.com/view/16149452/2sAYBd6nLD
