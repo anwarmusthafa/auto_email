@@ -63,6 +63,8 @@ def verify_otp(request):
             return Response({"error": "User ID and OTP are required."}, status=status.HTTP_400_BAD_REQUEST)
 
         user = CustomUser.objects.get(uuid=user_id)
+        if user.is_verified:
+            return Response({"error": "User is already verified."}, status=status.HTTP_400_BAD_REQUEST)
         if check_password(otp, user.otp):
             user.is_verified = True
             user.save()
