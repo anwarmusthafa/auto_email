@@ -56,9 +56,9 @@ jobs:
           sudo supervisorctl stop gunicorn
           sudo supervisorctl stop celery
           sudo supervisorctl stop celerybeat
-          sudo supervisorctl restart gunicorn
-          sudo supervisorctl restart celery
-          sudo supervisorctl restart celerybeat
+          sudo supervisorctl start gunicorn
+          sudo supervisorctl start celery
+          sudo supervisorctl start celerybeat
           sudo systemctl restart nginx
         EOF
         rm private_key.pem
