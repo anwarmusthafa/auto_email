@@ -20,7 +20,7 @@ def register_user(request):
     """Register a new user."""
     print(request.data)
     password = request.data.get('password')
-    confirm_password = request.data.get('confirm-password')
+    confirm_password = request.data.get('confirmPassword')
     email = request.data.get('email')
     name = request.data.get('name')
 
