@@ -103,7 +103,8 @@ def login_user(request):
         {
             "message": "Login successful.",
             "access": str(tokens.access_token),
-            "refresh": str(tokens)
+            "refresh": str(tokens),
+            "username":user.name
         },
         status=status.HTTP_200_OK
     )
@@ -120,12 +121,14 @@ def home(request):
 @permission_classes([IsAuthenticated])
 def logout_user(request):
     refresh_token = request.data.get('refresh')
+    print(refresh_token)
     if not refresh_token:
         return Response({"error": "Refresh token is required."}, status=status.HTTP_400_BAD_REQUEST)
     try:
         # Blacklist the refresh token
         token = RefreshToken(refresh_token)
         token.blacklist()
+        print("logout sucessful") 
         return Response({"message": "Successfully logged out."}, status=status.HTTP_200_OK)
 
     except TokenError:
@@ -137,6 +140,7 @@ def logout_user(request):
 def refresh_token(request):
     refresh_token = request.data.get('refresh')
     if not refresh_token:
+        print("refresh token not found")
         return Response({"error": "Refresh token is required."}, status=status.HTTP_400_BAD_REQUEST)
     try:
         token = RefreshToken(refresh_token)
@@ -147,6 +151,8 @@ def refresh_token(request):
             "refresh": new_refresh_token 
         }, status=status.HTTP_200_OK)
     except TokenError:
+        print("token error")
         return Response({"error": "Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
+        print(e)
         return Response({"error": "An unexpected error occurred. Please try again later."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -16,6 +16,7 @@ from celery import Celery
 from pathlib import Path
 from datetime import timedelta
 from decouple import config
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,7 +26,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY ='django-insecure-k%#c@!=we%3%nq)ij4#q58j6b(tdb&o%pyw5c_cw$y(eyrvh9o'
+dotenv_path = BASE_DIR / '.env'
+
+if dotenv_path.exists():
+    load_dotenv(dotenv_path)
+
+# Get the SECRET_KEY from environment variables
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool) 
