@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'django_celery_results',
     'django_celery_beat',
     'rest_framework_simplejwt.token_blacklist',
+    'corsheaders',
 
     #Custom Apps
 
@@ -62,6 +63,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'auto_email.urls'
@@ -206,3 +208,6 @@ LOGGING = {
         },
     },
 }
+
+#CORS CONFIGURATION
+CORS_ALLOW_ALL_ORIGINS = True
