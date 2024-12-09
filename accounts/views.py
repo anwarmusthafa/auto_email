@@ -76,7 +76,8 @@ def verify_otp(request):
         return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
     except ValueError:
         return Response({"error": "Invalid input provided."}, status=status.HTTP_400_BAD_REQUEST)
-    except Exception:
+    except Exception as e:
+        print(e)
         return Response({"error": "An unexpected error occurred. Please try again later."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 

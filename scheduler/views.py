@@ -27,6 +27,8 @@ def schedule_email(request):
 
     if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', email):
         return Response({"error": "Invalid email format."}, status=status.HTTP_400_BAD_REQUEST)
+    if len(subject) > 100:
+        return Response({"error": "Email content cannot exceed 100 characters."}, status=status.HTTP_400_BAD_REQUEST)
     try:
         combined_datetime = make_aware(datetime.strptime(f"{scheduled_date} {scheduled_time}", "%Y-%m-%d %H:%M:%S"))
     except ValueError:
